@@ -11,6 +11,7 @@ public class Hunter
     //instance variables
     private String hunterName;
     private String kit;
+    private String treasureCollection;
     private int gold;
 
     //Constructor
@@ -23,6 +24,7 @@ public class Hunter
     {
         this.hunterName = hunterName;
         kit = "";
+        treasureCollection = "";
         gold = startingGold;
     }
 
@@ -40,6 +42,10 @@ public class Hunter
     public int getGold()
     {
         return gold;
+    }
+
+    public String getTreasureCollection() {
+        return treasureCollection;
     }
 
     public void changeGold(int modifier)
@@ -61,7 +67,7 @@ public class Hunter
      */
     public boolean buyItem(String item, int costOfItem)
     {
-        if (costOfItem == 0 || gold < costOfItem || hasItemInKit(item))
+        if (costOfItem == 0 || gold < costOfItem || hasItemInKit(item, KIT_DELIMITER))
         {
             return false;
         }
@@ -81,7 +87,7 @@ public class Hunter
      */
     public boolean sellItem(String item, int buyBackPrice)
     {
-        if (buyBackPrice <= 0 || !hasItemInKit(item))
+        if (buyBackPrice <= 0 || !hasItemInKit(item, kit))
         {
             return false;
         }
@@ -91,6 +97,17 @@ public class Hunter
         return true;
     }
 
+    public boolean collectTreasure(Treasure treasure) {
+        String item = treasure.getTreasure();
+
+        if (hasItemInKit(item, treasureCollection)) {
+            treasureCollection += item + KIT_DELIMITER;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      *  Removes an item from the kit.
      *
@@ -98,7 +115,7 @@ public class Hunter
      */
     public void removeItemFromKit(String item)
     {
-        int itmIdx = kit.indexOf(item);
+        int itmIdx = kit.toLowerCase().indexOf(item.toLowerCase());
 
         // if item is found
         if (itmIdx >= 0)
@@ -122,7 +139,7 @@ public class Hunter
      */
     private boolean addItem(String item)
     {
-        if (!hasItemInKit(item))
+        if (!hasItemInKit(item, kit))
         {
             kit += item + KIT_DELIMITER;
             return true;
@@ -138,16 +155,16 @@ public class Hunter
      *
      * @return true if the item is found.
      */
-    public boolean hasItemInKit(String item)
+    public boolean hasItemInKit(String item, String inventory)
     {
         int placeholder = 0;
 
-        while (placeholder < kit.length() - 1)
+        while (placeholder < inventory.length() - 1)
         {
-            int endOfItem = kit.indexOf(KIT_DELIMITER, placeholder);
-            String tmpItem = kit.substring(placeholder, endOfItem);
+            int endOfItem = inventory.indexOf(KIT_DELIMITER.toLowerCase(), placeholder);
+            String tmpItem = inventory.substring(placeholder, endOfItem).toLowerCase();
             placeholder = endOfItem + 1;
-            if (tmpItem.equals(item))
+            if (tmpItem.equals(item.toLowerCase()))
             {
                 // early return
                 return true;
@@ -163,17 +180,25 @@ public class Hunter
      */
     public String getInventory()
     {
-        String printableKit = kit;
-        String space = " ";
-
-        int index = 0;
-
-        while (printableKit.indexOf(KIT_DELIMITER) != -1)
-        {
-            index = printableKit.indexOf(KIT_DELIMITER);
-            printableKit = printableKit.substring(0, index) + space + printableKit.substring(index + 1);
-        }
+        String printableKit = replaceDelimiter(kit);
         return printableKit;
+    }
+
+    public String getTreasures() {
+        String printableTreasure = replaceDelimiter(treasureCollection);
+        return printableTreasure;
+    }
+
+    public String replaceDelimiter(String kit) {
+        String newKit = kit;
+        int idx = 0;
+
+        while (newKit.indexOf(KIT_DELIMITER) != -1) {
+            idx = newKit.indexOf(KIT_DELIMITER);
+            newKit = newKit.substring(0, idx) + " " + newKit.substring(idx + 1);
+        }
+
+        return newKit;
     }
 
     /**
@@ -186,6 +211,14 @@ public class Hunter
         {
             str += " and " + getInventory();
         }
+
+        str += "\nTreasures collected: ";
+        if (!treasureCollection.equals("")) {
+            str += getTreasures();
+        } else {
+            str += "0";
+        }
+
         return str;
     }
 }

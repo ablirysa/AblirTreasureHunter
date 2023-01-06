@@ -13,6 +13,16 @@ public class Shop
     private static int MACHETE_COST = 6;
     private static int HORSE_COST = 12;
     private static int BOAT_COST = 20;
+    private static int LANTERN_COST = 18;
+
+    //static variables (for colors)
+    public static final String RESET = "\033[0m";
+    public static final String RED = "\033[0;31m";
+    public static final String GREEN = "\033[0;32m";
+    public static final String YELLOW = "\033[0;33m";
+    public static final String BLUE = "\033[0;34m";
+    public static final String PURPLE = "\033[0;35m";
+    public static final String CYAN = "\033[0;36m";
 
     // instance variables
     private double markdown;
@@ -30,6 +40,7 @@ public class Shop
             MACHETE_COST = 4;
             HORSE_COST = 10;
             BOAT_COST = 15;
+            LANTERN_COST = 13;
         }
         if (TreasureHunter.getMode().equals("c")) {
             WATER_COST = 1;
@@ -37,6 +48,7 @@ public class Shop
             MACHETE_COST = 1;
             HORSE_COST = 1;
             BOAT_COST = 1;
+            LANTERN_COST = 1;
         }
     }
 
@@ -101,11 +113,18 @@ public class Shop
      */
     public String inventory()
     {
-        String str = "Water: " + WATER_COST + " gold\n";
-        str += "Rope: " + ROPE_COST + " gold\n";
-        str += "Machete: " + MACHETE_COST + " gold\n";
-        str += "Horse: " + HORSE_COST + " gold\n";
-        str += "Boat: " + BOAT_COST + " gold\n";
+        String str = CYAN +  "WATER" +  RESET + " [" + WATER_COST + " gold]\n";
+        str += "     For your journeys against the desert's heat.\n";
+        str += GREEN + "ROPE" + RESET + " [" + ROPE_COST + " gold]\n";
+        str += "     Careful not to slip...\n";
+        str += BLUE + "MACHETE" + RESET + " [" + MACHETE_COST + " gold]\n";
+        str += "     To keep those leaves out of your face, hunter.\n";
+        str += RED + "HORSE" + RESET +" [" + HORSE_COST + " gold]\n";
+        str += "     A strong companion to carry you across the plains.\n";
+        str += PURPLE + "BOAT" + RESET + " [" + BOAT_COST + " gold]\n";
+        str += "     For your treacherous journey in water.\n";
+        str += YELLOW + "LANTERN" + RESET +  " [" +LANTERN_COST + " gold]\n";
+        str += "     Careful, you don't want anything sneaking up on you in the underground.\n";
 
         return str;
     }
@@ -170,28 +189,29 @@ public class Shop
      */
     public int getCostOfItem(String item)
     {
-        if (item.equals("Water") || item.equals("water"))
+        if (item.equalsIgnoreCase("Water"))
         {
             return WATER_COST;
         }
-        else if (item.equals("Rope") || item.equals("rope"))
+        else if (item.equalsIgnoreCase("Rope"))
         {
             return ROPE_COST;
         }
-        else if (item.equals("Machete") || item.equals("machete"))
+        else if (item.equalsIgnoreCase("Machete"))
         {
             return MACHETE_COST;
         }
-        else if (item.equals("Horse") || item.equals("horse"))
+        else if (item.equalsIgnoreCase("Horse"))
         {
             return HORSE_COST;
         }
-        else if (item.equals("Boat") || item.equals("boat"))
+        else if (item.equalsIgnoreCase("Boat"))
         {
             return BOAT_COST;
-        }
-        else
+        } else if (item.equalsIgnoreCase("Lantern"))
         {
+            return LANTERN_COST;
+        } else {
             return 0;
         }
     }

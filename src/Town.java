@@ -11,6 +11,8 @@ public class Town
     private Terrain terrain;
     private String printMessage;
     private boolean toughTown;
+    private Treasure treasure;
+    private int winCondition;
 
     //Constructor
     /**
@@ -31,11 +33,18 @@ public class Town
 
         // higher toughness = more likely to be a tough town
         toughTown = (Math.random() < toughness);
+
+        treasure = new Treasure();
+        winCondition = 0;
     }
 
     public String getLatestNews()
     {
         return printMessage;
+    }
+
+    public int getWinCondition() {
+        return winCondition;
     }
 
     /**
@@ -101,10 +110,20 @@ public class Town
         }
 
         if (!TreasureHunter.getMode().equals("e")){
-            if (Math.random() > noTroubleChance) {
+            if (Math.random() < noTroubleChance) {
                 printMessage = "You couldn't find any trouble";
             } else {
-                printMessage = "You want trouble, stranger!  You got it!\nOof! Umph! Ow!\n";
+                if (terrain.getTerrainName().equals("Ocean")) {
+                    printMessage = "You want trouble, pirate? Arrr, you got it!\nOof! Me eye! Ow!\n";
+                } else if (terrain.getTerrainName().equals("Desert")) {
+                    printMessage = "You've found me! You want my gold? You're going to have to fight for it...";
+                } else if (terrain.getTerrainName().equals("Mountains")) {
+                    printMessage = "You lookin' for trouble? Well you found it! I'm going to throw you off this mountain!";
+                } else if (terrain.getTerrainName().equals("Underground")) {
+                    printMessage = "Bad place to look for trouble. No one's goin' to find you in this darkness!\nAhh!\n";
+                } else {
+                    printMessage = "You want trouble, stranger!  You got it!\nOof! Umph! Ow!\n";
+                }
                 if (!TreasureHunter.getMode().equals("c")){
                     int goldDiff = (int) (Math.random() * 10) + 1;
                     if (Math.random() > noTroubleChance) {
@@ -112,9 +131,14 @@ public class Town
                         printMessage += "\nYou won the brawl and receive " + goldDiff + " gold.";
                         hunter.changeGold(goldDiff);
                     } else {
-                        printMessage += "That'll teach you to go lookin' fer trouble in MY town! Now pay up!";
-                        printMessage += "\nYou lost the brawl and pay " + goldDiff + " gold.";
-                        hunter.changeGold(-1 * goldDiff);
+                        if (hunter.getGold() - goldDiff == 0) {
+                            printMessage += "Not enough, huh? Guess your journey ends here.";
+                            winCondition = 2;
+                        } else {
+                            printMessage += "That'll teach you to go lookin' fer trouble in MY town! Now pay up!";
+                            printMessage += "\nYou lost the brawl and pay " + goldDiff + " gold.";
+                            hunter.changeGold(-1 * goldDiff);
+                        }
                     }
                 } else {
                     printMessage += "Okay, stranger! You proved yer mettle. Here, take my gold.";
@@ -125,10 +149,20 @@ public class Town
         } else {
             noTroubleChance -= 0.22; // decreased noTroubleChance means more likely to get into a brawl + win
 
-            if (Math.random() > noTroubleChance) {
+            if (Math.random() < noTroubleChance) {
                 printMessage = "You couldn't find any trouble";
             } else {
-                printMessage = "You want trouble, stranger!  You got it!\nOof! Umph! Ow!\n";
+                if (terrain.getTerrainName().equals("Ocean")) {
+                    printMessage = "You want trouble, pirate? Arrr, you got it!\nOof! Me eye! Ow!\n";
+                } else if (terrain.getTerrainName().equals("Desert")) {
+                    printMessage = "You've found me! You want my gold? You're going to have to fight for it...";
+                } else if (terrain.getTerrainName().equals("Mountains")) {
+                    printMessage = "You lookin' for trouble? Well you found it! I'm going to throw you off this mountain!";
+                } else if (terrain.getTerrainName().equals("Underground")) {
+                    printMessage = "Bad place to look for trouble. No one's goin' to find you in this darkness!\nAhh!\n";
+                } else {
+                    printMessage = "You want trouble, stranger!  You got it!\nOof! Umph! Ow!\n";
+                }
                 int goldDiff = (int) (Math.random() * 10) + 1;
                 if (Math.random() > noTroubleChance) {
                     goldDiff += 5;
@@ -136,9 +170,34 @@ public class Town
                     printMessage += "\nYou won the brawl and receive " + goldDiff + " gold.";
                     hunter.changeGold(goldDiff);
                 } else {
-                    printMessage += "That'll teach you to go lookin' fer trouble in MY town! Now pay up!";
-                    printMessage += "\nYou lost the brawl and pay " + goldDiff + " gold.";
-                    hunter.changeGold(-1 * goldDiff);
+                    if (hunter.getGold() - goldDiff == 0) {
+                        printMessage += "Not enough, huh? Guess your journey ends here.";
+                        winCondition = 2;
+                    } else {
+                        printMessage += "That'll teach you to go lookin' fer trouble in MY town! Now pay up!";
+                        printMessage += "\nYou lost the brawl and pay " + goldDiff + " gold.";
+                        hunter.changeGold(-1 * goldDiff);
+                    }
+                }
+            }
+        }
+    }
+
+    public void huntForTreasure() {
+        String treasureStr = treasure.getTreasure();
+
+        printMessage = "You have searched far and wide, finally landing yourself with " + treasureStr;
+
+        if (treasureStr.equals(Treasure.DUST)) {
+            printMessage += "Darn. Someone must have already got here, better luck next time.";
+        } else {
+            if (hunter.collectTreasure(treasure)) {
+                printMessage += "\nBrilliant! One step further until you win this little hunt, ey? It is now in your collection.";
+
+                if (Treasure.collectionHasAllTreasures(hunter.getTreasureCollection())) {
+                    winCondition = 1;
+                } else {
+                    printMessage += "\nWoops, you have one of those already. Put it back.";
                 }
             }
         }
@@ -156,31 +215,34 @@ public class Town
      */
     private Terrain getNewTerrain()
     {
-        double rnd = Math.random();
-        if (rnd < .2)
+        double rnd = (int) (Math.random() * 12) + 1;
+        if (rnd <= 2)
         {
             return new Terrain("Mountains", "Rope");
         }
-        else if (rnd < .4)
+        else if (rnd <= 4)
         {
             return new Terrain("Ocean", "Boat");
         }
-        else if (rnd < .6)
+        else if (rnd <= 6)
         {
             return new Terrain("Plains", "Horse");
         }
-        else if (rnd < .8)
+        else if (rnd <= 8)
         {
             return new Terrain("Desert", "Water");
         }
-        else
+        else if (rnd <= 10)
         {
             return new Terrain("Jungle", "Machete");
+        } else
+        {
+            return new Terrain("Underground", "Lantern");
         }
     }
 
     /**
-     * Determines whether or not a used item has broken.
+     * Determines whether a used item has broken.
      * @return true if the item broke.
      */
     private boolean checkItemBreak()
